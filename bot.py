@@ -41,23 +41,33 @@ def set_alert(update: Update, context: CallbackContext):
 
 def set_alert_input(update: Update, context: CallbackContext):
     paste_link = update.message.text
-    regex = r'(\-i).(\d+).(\d+)'
-    replace_shopee = re.search('https://shopee.co.th/', paste_link)
-    print(replace_shopee)
-    replace_link = re.search(regex, paste_link)
-    if(replace_shopee is None or replace_link is None):
+    regex_desktop = r'(\-i).(\d+).(\d+)'
+    regex_mobile = r'(https:\/\/shopee.co.th\/product)\/(\d+).(\d+)'
+    search_shopee_desktop = re.search('https://shopee.co.th/', paste_link)
+    print(search_shopee_desktop)
+    replace_link_desktop = re.search(regex_desktop, paste_link)
+    print(replace_link_desktop)
+    replace_link_mobile = re.search(regex_mobile, paste_link)
+    print(replace_link_mobile)
+    if((search_shopee_desktop is None or replace_link_desktop is None) and replace_link_mobile is None):
         context.bot.send_message(chat_id=update.effective_chat.id,
                                  text=f'<b>Invalid link</b>', parse_mode='HTML')
         return SET_ALERT
     else:
-        replace_shopid = replace_link.group(2)
-        replace_itemid = replace_link.group(3)
+        replace_shopid = ''
+        replace_itemid = ''
+        if(replace_link_desktop is not None):
+            replace_shopid = replace_link_desktop.group(2)
+            replace_itemid = replace_link_desktop.group(3)
+        if(replace_link_mobile is not None):
+            replace_shopid = replace_link_mobile.group(2)
+            replace_itemid = replace_link_mobile.group(3)
         user_data = context.user_data
         user_data[SHOPID] = replace_shopid
         user_data[ITEMID] = replace_itemid
         ISHOPID = context.user_data.get(SHOPID)
         IITEMID = context.user_data.get(ITEMID)
-
+        print(ISHOPID, ITEMID)
         product = {
             'userid': update.effective_chat.id,
             'itemid': IITEMID,
@@ -97,7 +107,7 @@ def help(update: Update, context: CallbackContext):
 
 def unknown(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id,
-                             text="Sorry, I didn't understand that command.")
+                             text="<b>Sorry, I didn't understand that command</b>", parse_mode='HTML')
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="<b>Commands\n\n/setalert - add alert product in shopee\n/getid - get member id\n/cancel - cancel command bot</b>", parse_mode='HTML')
 
@@ -171,7 +181,7 @@ def main():
     unknown_handler = MessageHandler(Filters.command, unknown)
     dispatcher.add_handler(unknown_handler)
 
-    job.run_repeating(alert, interval=60, first=10)
+    job.run_repeating(alert, interval=300, first=10)
 
     updater.start_polling()
     updater.idle()

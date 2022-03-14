@@ -20,7 +20,7 @@ docker build -t shopee_alert_telegram_bot_py .
 docker run shopee_alert_telegram_bot_py:latest
 ```
 
-#### Save tar.gz
+### Save tar.gz
 
 ```sh
 docker save shopee_alert_telegram_bot_py:latest | gzip > shopee_alert_telegram_bot_py_latest.tar.gz
